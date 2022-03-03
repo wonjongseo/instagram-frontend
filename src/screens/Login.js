@@ -4,8 +4,8 @@ import {
     faInstagram,
 } from "@fortawesome/free-brands-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useState} from "react";
 import {useForm} from "react-hook-form";
+import {useLocation} from "react-router-dom";
 import styled from "styled-components";
 import {logUserIn} from "../apollo";
 import AuthLayout from "../components/auth/AuthLayout";
@@ -26,6 +26,10 @@ const FacebookLogin = styled.div`
     }
 `;
 
+const Notification = styled.div`
+    color: #2ecc71;
+`;
+
 const LOGIN_MUTATION = gql`
     mutation login($username: String!, $password: String!) {
         login(username: $username, password: $password) {
@@ -37,18 +41,23 @@ const LOGIN_MUTATION = gql`
 `;
 
 function Login() {
+    const location = useLocation();
+    console.log(location);
     const {
         register,
         handleSubmit,
         errors,
-        clearErrors,
         formState,
         getValues,
         setError,
+        clearErrors,
     } = useForm({
         mode: "onChange",
+        defaultValues: {
+            username: location?.state?.username || "",
+            password: location?.state?.password || "",
+        },
     });
-
     const onCompleted = (data) => {
         const {
             login: {ok, error, token},
@@ -65,7 +74,6 @@ function Login() {
     const [login, {loading}] = useMutation(LOGIN_MUTATION, {
         onCompleted,
     });
-
     const onSubmitValid = (data) => {
         if (loading) {
             return;
@@ -85,6 +93,7 @@ function Login() {
                 <div>
                     <FontAwesomeIcon icon={faInstagram} size="3x" />
                 </div>
+                <Notification>{location?.state?.message}</Notification>
                 <form onSubmit={handleSubmit(onSubmitValid)}>
                     <Input
                         ref={register({
@@ -92,7 +101,7 @@ function Login() {
                             minLength: {
                                 value: 5,
                                 message:
-                                    "Username should be longer than 5 chars",
+                                    "Username should be longer than 5 chars.",
                             },
                         })}
                         onChange={clearLoginError}
@@ -101,13 +110,10 @@ function Login() {
                         placeholder="Username"
                         hasError={Boolean(errors?.username?.message)}
                     />
-                    <FormError message={errors.username?.message} />
+                    <FormError message={errors?.username?.message} />
                     <Input
                         ref={register({
-                            required: "Password is required",
-                            minLength: {
-                                message: "Too short!",
-                            },
+                            required: "Password is required.",
                         })}
                         onChange={clearLoginError}
                         name="password"
@@ -115,7 +121,7 @@ function Login() {
                         placeholder="Password"
                         hasError={Boolean(errors?.password?.message)}
                     />
-                    <FormError message={errors.password?.message} />
+                    <FormError message={errors?.password?.message} />
                     <Button
                         type="submit"
                         value={loading ? "Loading..." : "Log in"}
