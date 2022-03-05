@@ -37,7 +37,7 @@ const httpLink = createHttpLink({
     uri:
         process.env.NODE_ENV === "production"
             ? "https://jongseo-instagram.herokuapp.com/graphql"
-            : "http://localhost:4000/graphql",
+            : `http://localhost:4000/graphql/4000`,
 });
 
 const authLink = setContext((_, {headers}) => {
